@@ -1,0 +1,18 @@
+
+{% block content %}
+
+<div class="card">
+  <div class="row no-gutters">
+    <div class="col-md-8">
+      <div class="card-body">
+        {% if  object %}
+        <h5 class="card-title">{{ object.title }}</h5>
+        <a href="{% url 'mailing:usermessage' object.pk %}" >{{ object.title }}</a>
+
+        <p class="card-text mb-auto">{{ object.text }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -11,7 +11,8 @@ class Client(models.Model):
     Клиент сервиса:
     контактный email,
     ФИО,
-    комментарий.
+    комментарий,
+    статус.
     """
     name = models.CharField(max_length=150,
                             verbose_name='Фамилия, имя, отчество',
@@ -30,29 +31,30 @@ class Client(models.Model):
         ordering = ('name', )
 
 
-# class UserMessage(models.Model):
-#     """
-#     Сообщение для рассылки:
-#     тема письма,
-#     тело письма.
-#     """
-#     title = models.CharField(
-#         max_length=200,
-#         verbose_name='Заголовок сообщения'
-#         )
-#     text = models.CharField(
-#         max_length=500,
-#         verbose_name='Текст сообщения'
-#         )
-#     is_active = models.BooleanField(default=True, verbose_name='активный')
+class UserMessage(models.Model):
+    """
+    Сообщение для рассылки:
+    тема письма,
+    тело письма,
+    статус.
+    """
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Заголовок сообщения'
+        )
+    text = models.CharField(
+        max_length=500,
+        verbose_name='Текст сообщения'
+        )
+    is_active = models.BooleanField(default=True, verbose_name='активный')
 
-#     def __str__(self):
-#         return f"Сообщение: {self.title} " + "активное" if self.is_active else "неактивное"
+    def __str__(self):
+        return f"Сообщение: {self.title} " + "активное" if self.is_active else "неактивное"
 
-#     class Meta():
-#         verbose_name = 'Сообщение'
-#         verbose_name_plural = 'Сообщения'
-#         ordering = ('title', 'text')
+    class Meta():
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'
+        ordering = ('title', 'text')
 
 
 # class Mailing(models.Model):
