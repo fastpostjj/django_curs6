@@ -1,0 +1,41 @@
+
+{% block content %}
+
+<div class="card">
+  <div class="row no-gutters">
+    <div class="col-md-8">
+      <div class="card-body">
+        {% if  object %}
+        <h5 class="card-title">{{ object.title }}</h5>
+        <a href="{% url 'mailing:client' object.pk %}" >{{ object.name }}</a>
+          <!--
+        <div class="mb-1 text-muted">{{ object.created_at|date:'d:m:Y' }} г.</div>
+        <div class="mb-2 text-muted">Просмотров: {{  object.count_view }}</div>
+        <p class="card-text mb-auto">{{ object.name }}</p>
+        -->
+        <p class="card-text mb-auto">{{ object.email }}</p>
+        <p class="card-text mb-auto">{{ object.comment }}</p>
+        {% else %}
+        <p class="card-text mb-auto">Нет клиента</p>
+
+        {% endif %}
+      </div>
+    </div>
+  <!--
+    <div class="col-md-4">
+      <img
+          {% if  object.preview %}
+          src={{ object.preview.url }}  class="card-img" alt={{ object.title }}
+         {% else %}
+         scr='' alt={{ object.name }}
+      {% endif %}>
+    </div>
+             <div class="card-footer">
+
+             </div>
+             -->
+  </div>
+</div>
+
+
+{% endblock content %}

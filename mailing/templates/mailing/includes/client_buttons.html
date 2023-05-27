@@ -1,0 +1,5 @@
+{% block buttons %}
+                   <a class="btn btn-warning" href={% url 'mailing:client_update' object.pk %}>Изменить &raquo;</a>
+                   <a href="{% url 'mailing:toggle_activity_client' object.pk %}" class="btn btn-warning float-rigth">{% if object.is_active %}Деактивировать{% else %}Активировать{% endif %} &raquo;</a>
+                   <a class="btn btn-danger" href={% url 'mailing:client_delete' object.pk %}>Удалить &raquo;</a>
+{% endblock buttons %}
