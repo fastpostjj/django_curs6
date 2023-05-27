@@ -16,16 +16,27 @@ Including another URLconf
 """
 from mailing.apps import MailingConfig
 from django.urls import path
-from mailing.views import ClientDetailView, ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView, Toggle_Activity_Client,\
-    ClientDraftListView
-from mailing.views import UserMessageDetailView, UserMessageListView, UserMessageCreateView, UserMessageUpdateView, UserMessageDeleteView, Toggle_Activity_UserMessage,\
-    UserMessageDraftListView
+from mailing.views import ClientDetailView, ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView, \
+    Toggle_Activity_Client, ClientDraftListView
+from mailing.views import UserMessageDetailView, UserMessageListView, UserMessageCreateView, UserMessageUpdateView, \
+    UserMessageDeleteView, Toggle_Activity_UserMessage, UserMessageDraftListView
+from mailing.views import MailingDetailView, MailingListView, MailingCreateView, MailingUpdateView, \
+    MailingDeleteView, Toggle_Activity_Mailing, MailingDraftListView
 from mailing.views import index
 
 app_name = MailingConfig.name
 
 urlpatterns = [
-    path('', index, name='mailing'),
+    # path('', index, name='mailing'),
+
+    path('', MailingListView.as_view(), name='mailings'),
+    path('mailing/<int:pk>/', MailingDetailView.as_view(), name='mailing'),
+    path('mailing/create/', MailingCreateView.as_view(), name='mailing_create'),
+    path('mailing/update/<int:pk>/', MailingUpdateView.as_view(), name='mailing_update'),
+    path('mailing/delete/<int:pk>/', MailingDeleteView.as_view(), name='mailing_delete'),
+    path('mailing/toggle/<int:pk>/', Toggle_Activity_Mailing.as_view(), name='toggle_activity_mailing'),
+    path('mailing_drafts', MailingDraftListView.as_view(), name='mailing_drafts'),
+
     path('client/<int:pk>/', ClientDetailView.as_view(), name='client'),
     path('clients/', ClientListView.as_view(), name='clients'),
     path('client/create/', ClientCreateView.as_view(), name='client_create'),
@@ -41,6 +52,7 @@ urlpatterns = [
     path('usermessage/delete/<int:pk>/', UserMessageDeleteView.as_view(), name='usermessage_delete'),
     path('usermessage/toggle/<int:pk>/', Toggle_Activity_UserMessage.as_view(), name='toggle_activity_usermessage'),
     path('usermessage_drafts', UserMessageDraftListView.as_view(), name='usermessage_drafts'),
+
 
 
 

@@ -1,6 +1,6 @@
 {% block mainmenu %}
    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href={% url "mailing:mailing" %}>Рассылки</a>
+  <a class="navbar-brand" href={% url "mailing:mailings" %}>Рассылки</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -11,19 +11,15 @@
         <a class="nav-link" href={% url "mailing:clients" %}>Клиенты <span class="sr-only">(Clients)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href={% url "mailing:usermessages" %}>Сообщения</a>
+        <a class="nav-link" href={% url "mailing:usermessages" %}>Сообщения<span class="sr-only">(Messages)</span></a>
       </li>
        <li class="nav-item">
-        <a class="nav-link" href={% url "mailing:mailing" %}>Наш блог</a>
+        <a class="nav-link" href={% url "mailing:mailings" %}>Наш блог</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href={% url "mailing:mailing" %}>Последние 5 товаров</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href={% url "mailing:mailing" %}>Контакты</a>
+        <a class="nav-link" href={% url "mailing:mailings" %}>Последние 5 товаров</a>
       </li>
     </ul>
-
   </div>
 </nav>
 

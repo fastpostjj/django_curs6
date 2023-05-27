@@ -49,7 +49,7 @@ class UserMessage(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='активный')
 
     def __str__(self):
-        return f"Сообщение: {self.title} " + "активное" if self.is_active else "неактивное"
+        return f"Текст заголовка: {self.title}. Текст сообщения: {self.text}"# + "активное" if self.is_active else "неактивное"
 
     class Meta():
         verbose_name = 'Сообщение'
@@ -57,52 +57,58 @@ class UserMessage(models.Model):
         ordering = ('title', 'text')
 
 
-# class Mailing(models.Model):
-#     """
-#     Рассылка (настройки):
-#     время рассылки;
-#     периодичность: раз в день, раз в неделю, раз в месяц;
-#     статус рассылки (завершена, создана, запущена).
-#     """
-#     # client = models.ManyToManyField(Client, **NULLABLE)
-#     # client = models.ForeignKey(Client, on_delete=models.SET_NULL, **NULLABLE)
-#     client = models.CharField(max_length=200, verbose_name="Клиент", **NULLABLE)
+class Mailing(models.Model):
+    """
+    Рассылка (настройки):
+    название,
+    время рассылки;
+    периодичность: раз в день, раз в неделю, раз в месяц;
+    статус рассылки (завершена, создана, запущена),
+    статус активности.
+    """
+    # client = models.ManyToManyField(Client, **NULLABLE)
+    name = models.CharField(verbose_name='Название рассылки', max_length=100, default='Новая рассылка')
+    user_message = models.ForeignKey(UserMessage, on_delete=models.SET_NULL, **NULLABLE)
+    # message = models.CharField(max_length=200, verbose_name="Клиент", **NULLABLE)
 
-#     time = models.TimeField(
-#         verbose_name="Время рассылки",
-#         default="0:00:00"
+    time = models.TimeField(
+        verbose_name="Время рассылки",
+        default="0:00:00"
 
-#     )
-#     period = models.CharField(
-#         verbose_name="Периодичность рассылки",
-#         max_length=12,
-#         choices=[
-#             ('daily', 'раз в день'),
-#             ('weekly', 'раз в неделю'),
-#             ('monthly', 'раз в месяц')
-#         ],
-#         default='monthly'
-#         )
-#     status = models.CharField(
-#         verbose_name="Статус рассылки",
-#         max_length=9,
-#         choices=[
-#             ("finished", "завершена"),
-#             ("created", "создана"),
-#             ("run", "запущена")
-#         ],
-#         default="created"
-#         )
-#     is_active = models.BooleanField(default=True, verbose_name='активная')
+    )
+    period = models.CharField(
+        verbose_name="Периодичность рассылки",
+        max_length=12,
+        choices=[
+            ('daily', 'раз в день'),
+            ('weekly', 'раз в неделю'),
+            ('monthly', 'раз в месяц')
+        ],
+        default='monthly'
+        )
 
-#     def __str__(self):
-#         return f"Рассылка->Сообщение:{self.message.title}, время: {self.time}, периодичность: {self.period}, "\
-#             + f"статус:{self.status}" + "активная" if self.is_active else "неактивная"
+    status = models.CharField(
+        verbose_name="Статус рассылки",
+        max_length=9,
+        choices=[
+            ("finished", "завершена"),
+            ("created", "создана"),
+            ("run", "запущена")
+        ],
+        default="created"
+        )
+    is_active = models.BooleanField(default=True, verbose_name='активная')
 
-#     class Meta():
-#         verbose_name = 'Рассылка'
-#         verbose_name_plural = 'Рассылки'
-#         ordering = ('time', 'period', 'status',)
+    def __str__(self):
+        period = (dict(self._meta.get_field('period').choices)[self.period])
+        status = (dict(self._meta.get_field('status').choices)[self.status])
+        return f" {self.name}->Сообщение:{self.user_message.title}, время: {self.time}, периодичность: {period}, "\
+            + f"статус: {status}, " + "активная" if self.is_active else "неактивная"
+
+    class Meta():
+        verbose_name = 'Рассылка'
+        verbose_name_plural = 'Рассылки'
+        ordering = ('time', 'period', 'status',)
 
 
 # class MailingAttempts(models.Model):
