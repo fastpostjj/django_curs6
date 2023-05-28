@@ -2,13 +2,33 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views import generic, View
 
-from mailing.models import Client, UserMessage, Mailing
+from mailing.models import Client, UserMessage, Mailing, MailingAttempts
 
 
 # Create your views here.
 
 def index(request):
     return render(request, 'mailing/base.html')
+
+# MailingAttempts
+class MailingAttemptsDetailView(generic.DetailView):
+    model = MailingAttempts
+    def get_context_data(self, **kwargs):
+        contex_data = super().get_context_data(**kwargs)
+        contex_data['title'] = self.get_object()
+        contex_data['text'] = self.get_object()
+        return contex_data
+
+class MailingAttemptsListView(generic.ListView):
+    model = MailingAttempts
+    extra_context = {
+        'title': 'Попытки рассылки',
+        'text': 'Попытки рассылки'
+    }
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(is_active=True).order_by('mayling', 'mailing_daytime', 'server_answer', 'status', 'is_active')
+        return queryset
 
 # Mailing
 
@@ -19,15 +39,16 @@ class MailingDetailView(generic.DetailView):
         contex_data['title'] = self.get_object()
         contex_data['text'] = self.get_object()
         return contex_data
+
 class MailingCreateView(generic.CreateView):
     model = Mailing
-    fields = ('name', 'user_message', 'time', 'period', 'status')
+    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status')
     success_url = reverse_lazy('mailing:mailings')
 
 
 class MailingUpdateView(generic.UpdateView):
     model = Mailing
-    fields = ('name', 'user_message', 'time', 'period', 'status')
+    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status')
     # success_url = reverse_lazy('blog:blogs')
     def get_success_url(self):
         return reverse('mailing:mailing', args=[self.object.pk])
@@ -202,14 +223,5 @@ class ClientDetailView(generic.DetailView):
     #     context = self.get_context_data(object=self.object)
     #     return self.render_to_response(context)
 
-            # # Посылаем email, когда счетчик достигнет 100
-            # subject = f"Вашу статью прочитали {self.object.count_view} раз!"
-            # message_body = f"Количество просмотров статьи {self.object.title} достигло {self.object.count_view}"
-            # send_mail(
-            # subject,
-            # message_body,
-            # EMAIL_HOST_USER,
-            # [EMAIL_HOST_USER],
-            # fail_silently=False,
-            # )
+
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mailing.models import Client, UserMessage, Mailing
+from mailing.models import Client, UserMessage, Mailing, MailingAttempts
 
 
 # Register your models here.
@@ -20,7 +20,14 @@ class UserMessageAdmin(admin.ModelAdmin):
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'user_message', 'time', 'period', 'status', 'is_active')
+    list_display = ('id', 'name', 'user_message', 'time', 'start_day', 'period', 'status', 'is_active')
     list_display_links = ('id', 'name', 'user_message', 'time', 'period', 'status')
-    list_filter = ('user_message', 'name', 'time', 'period', 'status', 'is_active')
-    search_fields = ('user_message', 'name', 'time', 'period', 'status', 'is_active')
+    list_filter = ('user_message', 'name', 'time', 'start_day', 'period', 'status', 'is_active')
+    search_fields = ('user_message', 'name', 'time', 'start_day', 'period', 'status', 'is_active')
+
+@admin.register(MailingAttempts)
+class MailingAttemptsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'mayling', 'mailing_daytime', 'server_answer', 'status', 'is_active')
+    list_display_links = ('id', 'mayling', 'mailing_daytime')
+    list_filter = ('id', 'mayling', 'mailing_daytime', 'server_answer', 'status', 'is_active')
+    search_fields = ('id', 'mayling', 'mailing_daytime', 'server_answer', 'status', 'is_active')

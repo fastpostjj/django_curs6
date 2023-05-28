@@ -7,12 +7,10 @@
       <div class="card-body">
         {% if  object %}
         <h5 class="card-title">
-
-        <a href="{% url 'mailing:mailing' object.pk %}" >{{ object.name }}</a></h5>
-        <p class="card-text mb-auto">Сообщение: {{ object.user_message }}</p>
-        <p class="card-text mb-auto">Время: {{ object.time }}</p>
-        <p class="card-text mb-auto">Дата начала: {{ object.start_day }}</p>
-        <p class="card-text mb-auto">Периодичность: {{ object.get_period_display }}</p>
+        <a href="{% url 'mailing:mailingattempt' object.pk %}" >{{ object.mayling }}</a></h5>
+        <p class="card-text mb-auto">Сообщение: {{ object.mayling }}</p>
+        <p class="card-text mb-auto">Время: {{ object.mailing_daytime }}</p>
+        <p class="card-text mb-auto">Ответ сервера: {{ object.server_answer }}</p>
         <p class="card-text mb-auto">Статус: {{ object.get_status_display }}</p>
         {% else %}
         <p class="card-text mb-auto">Нет рассылки</p>
