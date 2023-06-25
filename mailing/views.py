@@ -1,7 +1,9 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views import generic, View
 
+from mailing.forms import ClientForm, ClientFormCut, MailingForm, MailingFormCut, UserMessageForm, UserMessageFormCut
 from mailing.models import Client, UserMessage, Mailing, MailingAttempts
 
 
@@ -10,8 +12,11 @@ from mailing.models import Client, UserMessage, Mailing, MailingAttempts
 def index(request):
     return render(request, 'mailing/base.html')
 
+def home(request):
+    return render(request, 'mailing/base.html')
+
 # MailingAttempts
-class MailingAttemptsDetailView(generic.DetailView):
+class MailingAttemptsDetailView(LoginRequiredMixin, generic.DetailView):
     model = MailingAttempts
     def get_context_data(self, **kwargs):
         contex_data = super().get_context_data(**kwargs)
@@ -19,7 +24,7 @@ class MailingAttemptsDetailView(generic.DetailView):
         contex_data['text'] = self.get_object()
         return contex_data
 
-class MailingAttemptsListView(generic.ListView):
+class MailingAttemptsListView(LoginRequiredMixin, generic.ListView):
     model = MailingAttempts
     extra_context = {
         'title': 'Попытки рассылки',
@@ -32,7 +37,7 @@ class MailingAttemptsListView(generic.ListView):
 
 # Mailing
 
-class MailingDetailView(generic.DetailView):
+class MailingDetailView(LoginRequiredMixin, generic.DetailView):
     model = Mailing
     def get_context_data(self, **kwargs):
         contex_data = super().get_context_data(**kwargs)
@@ -40,38 +45,70 @@ class MailingDetailView(generic.DetailView):
         contex_data['text'] = self.get_object()
         return contex_data
 
-class MailingCreateView(generic.CreateView):
+class MailingCreateView(LoginRequiredMixin, generic.CreateView):
     model = Mailing
-    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status')
+    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status', 'user')
     success_url = reverse_lazy('mailing:mailings')
 
+    def form_valid(self, form):
+        """Текущий пользователь будет автором созданной рассылки"""
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        form.save_m2m()
+        return redirect(self.get_success_url())
 
-class MailingUpdateView(generic.UpdateView):
+
+class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Mailing
-    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status')
+    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status', 'user')
     # success_url = reverse_lazy('blog:blogs')
     def get_success_url(self):
         return reverse('mailing:mailing', args=[self.object.pk])
 
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not (request.user.is_staff or request.user.is_superuser or self.object.user == request.user):
+            context = {'text': 'Ошибка!',
+                       'error_message': 'Вносить изменения в рассылку, может только пользователь, который ее создал или администратор!'}
+            return render(request, 'mailing/error.html', context)
+        return super().get(request, args, kwargs)
 
-class MailingDeleteView(generic.DeleteView):
+    def get_form_class(self, *args, **kwargs):
+        # Редактирование формы доступно только админу и  автору. Менеджеру с правами is_staff доступно только изменение поля is_active
+        if self.request.user.is_superuser:
+             class_form = MailingForm
+        elif self.object.user == self.request.user:
+            class_form = MailingForm
+        elif self.request.user.is_staff:
+             class_form = MailingFormCut
+        else:
+             class_form = None
+        return class_form
+
+
+class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Mailing
     success_url = reverse_lazy('mailing:mailings')
 
-class MailingListView(generic.ListView):
+class MailingListView(LoginRequiredMixin, generic.ListView):
     model = Mailing
     extra_context = {
         'title': 'Рассылка',
         'text': 'Рассылки'
     }
 
-    def get_queryset(self):
+    def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset()
-        # Model.get_period_display()
-        queryset = queryset.filter(is_active=True).order_by('status', 'period', 'name', 'user_message', 'time')
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            # Пользователь с правами персонала или администратора может видеть все рассылки
+            queryset = queryset.filter(is_active=True).order_by('status', 'period', 'name', 'user_message', 'time')
+        else:
+            # Обычный пользователь - только свои
+            queryset = queryset.filter(is_active=True, user=self.request.user).order_by('status', 'period', 'name', 'user_message', 'time')
         return queryset
 
-class MailingDraftListView(generic.ListView):
+class MailingDraftListView(LoginRequiredMixin, generic.ListView):
     model = Mailing
     extra_context = {
         'title': 'Неактивные рассылки',
@@ -80,7 +117,7 @@ class MailingDraftListView(generic.ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=False).order_by('status', 'period', 'name', 'user_message', 'time')
+        queryset = queryset.filter(is_active=False, user=self.request.user).order_by('status', 'period', 'name', 'user_message', 'time')
         return queryset
 class Toggle_Activity_Mailing(View):
     def get(request, *args, pk, **kwargs):
@@ -102,7 +139,7 @@ class Toggle_Activity_UserMessage(View):
         usermessage.save()
         return redirect(reverse('mailing:usermessage', args=[usermessage.pk]))
 
-class UserMessageDetailView(generic.DetailView):
+class UserMessageDetailView(LoginRequiredMixin, generic.DetailView):
     model = UserMessage
     def get_context_data(self, **kwargs):
         contex_data = super().get_context_data(**kwargs)
@@ -110,25 +147,35 @@ class UserMessageDetailView(generic.DetailView):
         contex_data['text'] = self.get_object()
         return contex_data
 
-class UserMessageCreateView(generic.CreateView):
+class UserMessageCreateView(LoginRequiredMixin, generic.CreateView):
     model = UserMessage
     fields = ('title', 'text')
     success_url = reverse_lazy('mailing:usermessages')
 
-
-class UserMessageUpdateView(generic.UpdateView):
+class UserMessageUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = UserMessage
     fields = ('title', 'text')
     # success_url = reverse_lazy('blog:blogs')
     def get_success_url(self):
         return reverse('mailing:usermessage', args=[self.object.pk])
 
+    def get_form_class(self, *args, **kwargs):
+        # Редактирование формы доступно только админу и  пользователю. Менеджеру с правами is_staff редактирование недоступно
+        if self.request.user.is_superuser:
+             class_form = UserMessageForm
+        # elif self.object.user == self.request.user:
+        #     class_form = UserMessageForm
+        elif self.request.user.is_staff:
+             class_form = UserMessageFormCut
+        else:
+             class_form = UserMessageForm
+        return class_form
 
-class UserMessageDeleteView(generic.DeleteView):
+class UserMessageDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = UserMessage
     success_url = reverse_lazy('mailing:usermessages')
 
-class UserMessageListView(generic.ListView):
+class UserMessageListView(LoginRequiredMixin, generic.ListView):
     model = UserMessage
     extra_context = {
         'title': 'Сообщения',
@@ -140,7 +187,7 @@ class UserMessageListView(generic.ListView):
         queryset = queryset.filter(is_active=True).order_by("title", "text")
         return queryset
 
-class UserMessageDraftListView(generic.ListView):
+class UserMessageDraftListView(LoginRequiredMixin, generic.ListView):
     model = UserMessage
     extra_context = {
         'title': 'Неактивные сообщения',
@@ -152,20 +199,24 @@ class UserMessageDraftListView(generic.ListView):
         queryset = queryset.filter(is_active=False).order_by("title")
         return queryset
 
-
-class ClientListView(generic.ListView):
+class ClientListView(LoginRequiredMixin, generic.ListView):
     model = Client
     extra_context = {
         'title': 'Наши клиенты',
         'text': "Наши клиенты"
     }
 
-    def get_queryset(self):
+    def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=True).order_by("name", "email")
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            # Пользователь с правами персонала или администратора может видеть всех клиентов
+            queryset = queryset.filter(is_active=True).order_by("name", "email")
+        else:
+            # Обычный пользователь - только своих
+            queryset = queryset.filter(is_active=True, user=self.request.user).order_by("name", "email")
         return queryset
 
-class ClientDraftListView(generic.ListView):
+class ClientDraftListView(LoginRequiredMixin, generic.ListView):
     model = Client
     extra_context = {
         'title': 'Неактивные клиенты',
@@ -174,27 +225,56 @@ class ClientDraftListView(generic.ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=False).order_by("name")
+        queryset = queryset.filter(is_active=False, user=self.request.user).order_by("name")
         return queryset
 
 
-class ClientCreateView(generic.CreateView):
+class ClientCreateView(LoginRequiredMixin, generic.CreateView):
     model = Client
-    fields = ('name', 'email', 'comment', 'is_active')
+    fields = ('name', 'email', 'comment', 'is_active', 'user')
     success_url = reverse_lazy('mailing:clients')
 
+    def form_valid(self, form):
+        """Текущий пользователь будет автором созданного клиента"""
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        form.save_m2m()
+        return redirect(self.get_success_url())
 
-class ClientUpdateView(generic.UpdateView):
+
+class ClientUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Client
-    fields = ('name', 'email', 'comment', 'is_active')
+    fields = ('name', 'email', 'comment', 'user', 'is_active')
     # success_url = reverse_lazy('blog:blogs')
     def get_success_url(self):
         return reverse('mailing:client', args=[self.object.pk])
 
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not (request.user.is_staff or request.user.is_superuser or self.object.user == request.user):
+            context = {'text':'Ошибка!',
+                       'error_message':'Вносить изменения в данные клента, может только пользователь, который его создал или администратор!'}
+            return render(request, 'mailing/error.html', context)
+        return super().get(request, args, kwargs)
 
-class ClientDeleteView(generic.DeleteView):
+    def get_form_class(self, *args, **kwargs):
+        # Редактирование формы доступно только админу и  автору. Менеджеру с правами is_staff доступно только изменение поля is_active
+        if self.request.user.is_superuser:
+             class_form = ClientForm
+        elif self.object.user == self.request.user:
+            class_form = ClientForm
+        elif self.request.user.is_staff:
+             class_form = ClientFormCut
+        else:
+             class_form = None
+        return class_form
+
+
+class ClientDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Client
     success_url = reverse_lazy('mailing:clients')
+
 
 
 class Toggle_Activity_Client(View):
@@ -209,7 +289,7 @@ class Toggle_Activity_Client(View):
 
         return redirect(reverse('mailing:client', args=[client.pk]))
 
-class ClientDetailView(generic.DetailView):
+class ClientDetailView(LoginRequiredMixin, generic.DetailView):
     model = Client
     def get_context_data(self, **kwargs):
         contex_data = super().get_context_data(**kwargs)
@@ -218,10 +298,10 @@ class ClientDetailView(generic.DetailView):
         return contex_data
 
     # def get_object(self, queryset=None):
-    # def get(self, request, *args, **kwargs):
-    #     self.object = super().get_object()
-    #     context = self.get_context_data(object=self.object)
-    #     return self.render_to_response(context)
+    def get(self, request, *args, **kwargs):
+        self.object = super().get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
 
 

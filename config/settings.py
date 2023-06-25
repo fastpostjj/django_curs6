@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_crontab',
     'mailing',
+    'blog',
+    'user_auth',
 ]
 
 MIDDLEWARE = [
@@ -79,16 +81,28 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 params = get_database_params('database.ini')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': databasename,
-        'USER': params['user'],
-        'PORT': params['port'],
-        'PASSWORD': params['password'],
-        'HOST': params['host']
+if os.name == "nt":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': databasename,
+            'USER': params['user'],
+            'PORT': params['port'],
+            'PASSWORD': params['password'],
+            'HOST': params['host']
+        }
     }
-}
+elif os.name == "Linux":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': databasename,
+            'USER': 'django-user',
+            'PORT': params['port'],
+            'PASSWORD': '12345',
+            'HOST': params['host']
+        }
+    }
 
 
 
@@ -131,6 +145,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
     ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -150,6 +167,14 @@ EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CRONJOBS = [
-    ('*/5 * * * *', 'mailing.cron.my_scheduled_job')
-]
+AUTH_USER_MODEL = 'user_auth.User'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/users/'
+
+NULLABLE = {'null': True, 'blank': True}
+
+if os.name == "Linux":
+    CRONJOBS = [
+        ('*/5 * * * *', 'mailing.cron.my_scheduled_job')
+    ]

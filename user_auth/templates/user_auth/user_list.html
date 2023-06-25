@@ -1,0 +1,31 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<diov class="col-12">
+    <a href="{% url 'user_auth:users' %}" class ='btn btn-primary' m-2>Пользователи &raquo;</a>
+    <a href="{% url 'user_auth:users_drafts' %}" class ='btn btn-primary' m-2>Неактивные пользователи &raquo;</a>
+</diov>
+    <br>
+
+{% if  object_list %}
+{% for object in object_list %}
+    <div class="row">
+     {% include 'user_auth/includes/user.html' %}
+    </div>
+    <a class="btn btn-secondary" href={% url 'user_auth:user' object.pk %}>Перейти &raquo;</a>
+{% endfor %}
+{% else %}
+    <div class="row">
+        <div class="card">
+            <div class="row no-gutters">
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            Нет ни одного пользователя</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock content %}

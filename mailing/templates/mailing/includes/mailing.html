@@ -14,6 +14,7 @@
         <p class="card-text mb-auto">Дата начала: {{ object.start_day }}</p>
         <p class="card-text mb-auto">Периодичность: {{ object.get_period_display }}</p>
         <p class="card-text mb-auto">Статус: {{ object.get_status_display }}</p>
+        <p class="card-text mb-auto">Автор: {{ object.user }}</p>
         {% else %}
         <p class="card-text mb-auto">Нет рассылки</p>
         {% endif %}

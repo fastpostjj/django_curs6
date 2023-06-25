@@ -38,7 +38,7 @@ def get_email_params(filename="email.ini", section="email"):
                 ))
     return db
 
-databasename='mailing_new'
+databasename='mailing'
 
 
 

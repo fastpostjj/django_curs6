@@ -1,6 +1,8 @@
 from django.db import models
 
-NULLABLE = {'null': True, 'blank': True}
+from user_auth.models import User
+
+from config.settings import NULLABLE
 
 
 # Create your models here.
@@ -20,6 +22,11 @@ class Client(models.Model):
     email = models.CharField(max_length=150, )
     comment = models.CharField(max_length=150, )
     is_active = models.BooleanField(default=True, verbose_name='активный')
+    user = models.ForeignKey(User,
+                             verbose_name='автор',
+                             default=None,
+                             on_delete=models.SET_NULL,
+                             **NULLABLE)
 
     def __str__(self):
         return f"Клиент {self.name}, email:{self.email}, " \
@@ -29,6 +36,9 @@ class Client(models.Model):
         verbose_name = 'Клиент'
         verbose_name_plural = 'Клиенты'
         ordering = ('name',)
+        permissions = {
+            ("set_client_status", "can change client status")
+        }
 
 
 class UserMessage(models.Model):
@@ -104,6 +114,12 @@ class Mailing(models.Model):
         default="created"
     )
     is_active = models.BooleanField(default=True, verbose_name='активная')
+    user = models.ForeignKey(User,
+                             verbose_name='автор',
+                             default=None,
+                             on_delete=models.SET_NULL,
+                             **NULLABLE)
+
 
     def __str__(self):
         period = (dict(self._meta.get_field('period').choices)[self.period])
@@ -114,7 +130,10 @@ class Mailing(models.Model):
     class Meta():
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
-        ordering = ('time', 'period', 'status',)
+        ordering = ('is_active', 'time', 'period', 'status',)
+        permissions = {
+            ("set_mailing_status", "can change mailing status")
+        }
 
 
 class MailingAttempts(models.Model):

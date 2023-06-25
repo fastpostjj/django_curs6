@@ -11,12 +11,29 @@
     <a href="{% url 'mailing:client_create' %}" class ='btn btn-primary' m-2>Добавить клиента &raquo;</a>
 </diov>
 {% if  object_list %}
+  <table class="table table-sm">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">ФИО</th>
+      <th scope="col">email</th>
+      <th scope="col">Комментарий</th>
+    </tr>
+  </thead>
+  <tbody>
 {% for object in object_list %}
-    <div class="row">
-     {% include 'mailing/includes/client.html' %}
-    </div>
-    <a class="btn btn-secondary" href={% url 'mailing:client' object.pk %}>Перейти &raquo;</a>
+    <tr>
+      <th scope="row">
+          <a href="{% url 'mailing:client' object.pk %}"> {{ object.name }}</a>
+      </th>
+      <td>
+          <a href="{% url 'mailing:client' object.pk %}">{{ object.email }}</a>
+      </td>
+      <td>{{ object.comment }}</td>
+    </tr>
 {% endfor %}
+  <tbody>
+  <table
+
 {% else %}
     <div class="row">
         <div class="card">

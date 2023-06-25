@@ -13,6 +13,11 @@
 </head>
     <body>
     {%  include 'mailing/includes/inc_menu.html' %}
+    {% if user.is_authenticated %}
+    <div class="mb-1 text-muted">Вы вошли как {{ user  }}</div>
+    {% else %}
+    <div class="mb-1 text-muted">Вы не авторизованы</div>
+    {% endif %}
     {% block content %}
     {% endblock %}
 

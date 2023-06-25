@@ -1,12 +1,15 @@
 {% block mainmenu %}
    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href={% url "mailing:mailings" %}>Рассылки</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+   <a class="navbar-brand" href={% url "blog:blogs" %}>Наш блог</a>
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
+
+  {% if user.is_authenticated %}
+      <li class="nav-item active">
+         <a class="nav-link" href={% url "mailing:mailings" %}>Рассылки</a>
+      </li>
+
       <li class="nav-item active">
         <a class="nav-link" href={% url "mailing:clients" %}>Клиенты <span class="sr-only">(Clients)</span></a>
       </li>
@@ -16,6 +19,27 @@
        <li class="nav-item">
         <a class="nav-link" href={% url "mailing:mailingattempts" %}>Попытки рассылки</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href={% url "user_auth:logout" %}>Выйти</a>
+      </li>
+  {% else %}
+      <li class="nav-item">
+        <a class="nav-link" href={% url "user_auth:login" %}>Войти</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href={% url "user_auth:register" %}>Регистрация</a>
+      </li>
+  {% endif %}
+  {% if user.is_authenticated %}
+      <li class="nav-item">
+        <a class="nav-link" href={% url "user_auth:profile" %}>Профиль</a>
+      </li>
+  {% endif %}
+  {% if user.is_superuser %}
+      <li class="nav-item">
+        <a class="nav-link" href={% url "user_auth:users" %}>Пользователи</a>
+      </li>
+  {% endif %}
     </ul>
   </div>
 </nav>

@@ -17,7 +17,7 @@ Including another URLconf
 from mailing.apps import MailingConfig
 from django.urls import path
 from mailing.views import ClientDetailView, ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView, \
-    Toggle_Activity_Client, ClientDraftListView
+    Toggle_Activity_Client, ClientDraftListView, home
 from mailing.views import UserMessageDetailView, UserMessageListView, UserMessageCreateView, UserMessageUpdateView, \
     UserMessageDeleteView, Toggle_Activity_UserMessage, UserMessageDraftListView
 from mailing.views import MailingDetailView, MailingListView, MailingCreateView, MailingUpdateView, \
@@ -30,7 +30,8 @@ urlpatterns = [
     path('mailingattempt/<int:pk>/', MailingAttemptsDetailView.as_view(), name='mailingattempt'),
     path('mailingattempts/', MailingAttemptsListView.as_view(), name='mailingattempts'),
 
-    path('', MailingListView.as_view(), name='mailings'),
+    path('', home, name='home'),
+    path('mailing/mailings', MailingListView.as_view(), name='mailings'),
     path('mailing/<int:pk>/', MailingDetailView.as_view(), name='mailing'),
     path('mailing/create/', MailingCreateView.as_view(), name='mailing_create'),
     path('mailing/update/<int:pk>/', MailingUpdateView.as_view(), name='mailing_update'),

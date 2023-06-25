@@ -6,7 +6,7 @@
                 <form method="post"  enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <input type="submit" class="btn btn-success" value="{% if object %}Сохранить сообщение{% else %}Создать сообщение{% endif %}"  &raquo;>
+                    <input type="submit" class="btn btn-success" value="{% if object %}Сохранить сообщение{% else %}Создать сообщение{% endif %}">
                 </form>
                 <div class="card-footer">
                     <a href="{% url 'mailing:usermessages' %}" class="btn btn-primary">Все сообщения</a>
