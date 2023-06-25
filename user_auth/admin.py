@@ -7,12 +7,11 @@ from user_auth.models import User
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     """
-    first_name
-    last_name
-    is_staff
-    is_superuser
+    email
+    phone
+    is_blocked
     """
-    list_display = ('id', 'email', 'first_name', 'last_name', 'country')
+    list_display = ('id', 'email', 'phone', 'first_name', 'last_name', 'country', 'is_blocked')
 
-    list_filter = ('id', 'email', 'first_name', 'last_name', 'country')
-    list_display_links = ('id', 'email', 'first_name', 'last_name', 'country')
+    list_filter = ('id', 'email', 'phone', 'first_name', 'last_name', 'country', 'is_blocked')
+    list_display_links = ('id', 'email', 'phone', 'first_name', 'last_name', 'country', 'is_blocked')

@@ -4,7 +4,7 @@ from user_auth.apps import UserAuthConfig
 from user_auth.views import UserForgotPasswordView, UserRegisterView, \
     ProfileUpdateView, RegisterView, generate_new_password, \
     UserPasswordResetConfirmView, EmailConfirmationSentView, UserConfirmEmailView, EmailConfirmedView, \
-    EmailConfirmationFailedView, UsersListView, UserDetailView, UsersDraftListView
+    EmailConfirmationFailedView, UsersListView, UserDetailView, UsersDraftListView, Toggle_Activity_User
 
 app_name = UserAuthConfig.name
 
@@ -16,6 +16,7 @@ urlpatterns = [
     path('users/', UsersListView.as_view(), name='users'),
     path('users_drafts/', UsersDraftListView.as_view(), name='users_drafts'),
     path('user/<int:pk>/', UserDetailView.as_view(), name='user'),
+    path('user/toggle/<int:pk>/', Toggle_Activity_User.as_view(), name='toggle_activity_user'),
 
     path('email-confirmation-sent/', EmailConfirmationSentView.as_view(), name='email_confirmation_sent'),
     path('confirm-email/<str:uidb64>/<str:token>/', UserConfirmEmailView.as_view(), name='confirm_email'),

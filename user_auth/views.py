@@ -10,7 +10,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -38,7 +38,7 @@ class UsersListView(LoginRequiredMixin, generic.ListView):
     }
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=True).order_by('email', 'phone', 'is_active')
+        queryset = queryset.filter(is_active=True, is_blocked=False).order_by('email', 'phone', 'is_active')
         return queryset
 
 class UsersDraftListView(LoginRequiredMixin, generic.ListView):
@@ -49,8 +49,18 @@ class UsersDraftListView(LoginRequiredMixin, generic.ListView):
     }
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=False).order_by('email', 'phone', 'is_active')
+        queryset = queryset.filter(is_active=True, is_blocked=True).order_by('email', 'phone', 'is_active')
         return queryset
+
+class Toggle_Activity_User(View):
+    def get(request, *args, pk, **kwargs):
+        user = get_object_or_404(User, pk=pk)
+        if user.is_blocked:
+            user.is_blocked = False
+        else:
+            user.is_blocked = True
+        user.save()
+        return redirect(reverse('user_auth:user', args=[user.pk]))
 
 class UserIsNotAuthenticated(UserPassesTestMixin):
     """Миксин для запрета регистрации авторизованных юзеров"""

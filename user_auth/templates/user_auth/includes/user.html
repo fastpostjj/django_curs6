@@ -10,8 +10,11 @@
 
         <a href="{% url 'mailing:mailing' object.pk %}" >{{ object.name }}</a></h5>
         <p class="card-text mb-auto">email: {{ object.email }}</p>
+        <p class="card-text mb-auto">first_name: {{ object.first_name }}</p>
+        <p class="card-text mb-auto">last_name: {{ object.last_name }}</p>
         <p class="card-text mb-auto">Телефон: {{ object.phone }}</p>
         <p class="card-text mb-auto">Страна: {{ object.country }}</p>
+        <p class="card-text mb-auto"> {% if object.is_blocked %} Заблокирован {% else %} Не заблокирован {% endif %}</p>
         <div class="col-md-4">
             <img
             {% if  object.avatar %}

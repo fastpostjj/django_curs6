@@ -3,9 +3,7 @@
     {% include 'user_auth/includes/user.html' %}
 
    <!-- <a class="btn btn-warning" href={% url 'mailing:mailing_update' object.pk %}>Изменить &raquo;</a>-->
-   <!-- <a href="{% url 'mailing:toggle_activity_mailing' object.pk %}">-->
-   <!-- class="btn btn-warning float-rigth">{% if object.is_active %}Деактивировать{% else %}Активировать{% endif %} &raquo; -->
-   <!-- </a>-->
-   <!-- <a class="btn btn-danger" href={% url 'mailing:mailing_delete' object.pk %}>Удалить &raquo;</a> -->
+   <a href="{% url 'user_auth:toggle_activity_user' object.pk %}"
+   a class="btn btn-warning float-rigth">{% if object.is_blocked %}Разблокировать{% else %}Блокировать{% endif %} &raquo; </a>
 
 {% endblock content %}
