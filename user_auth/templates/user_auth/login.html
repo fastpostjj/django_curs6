@@ -7,6 +7,13 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-body">
+                    {% if messages %}
+                      <ul class="messages">
+                        {% for message in messages %}
+                          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
                     <form method="post">
                         {% csrf_token %}
                         {{ form.as_p }}
@@ -14,7 +21,11 @@
                     </form>
                 </div>
                 <div class="card-footer">
-            Введите логин и пароль
+
+                        {% if not user.is_authenticated %}
+                        <a href={% url "user_auth:foggot_password" %} class="btn btn-info"> Забыли пароль?</a>
+
+                        {% endif %}
                 </div>
             </div>
        <!-- </div> -->

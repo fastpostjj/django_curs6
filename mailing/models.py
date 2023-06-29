@@ -57,6 +57,11 @@ class UserMessage(models.Model):
         verbose_name='Текст сообщения'
     )
     is_active = models.BooleanField(default=True, verbose_name='активный')
+    user = models.ForeignKey(User,
+                             verbose_name='автор',
+                             default=None,
+                             on_delete=models.SET_NULL,
+                             **NULLABLE)
 
     def __str__(self):
         return f"Текст заголовка: {self.title}." # + " Текст сообщения: {self.text}"  # + "активное" if self.is_active else "неактивное"

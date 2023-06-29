@@ -2,15 +2,16 @@ from random import sample
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.contrib.auth import login, get_user_model
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -22,16 +23,29 @@ from user_auth.models import User
 
 
 # Create your views here.
-class UserDetailView(LoginRequiredMixin, generic.DetailView):
+
+class BlockedLoginView(LoginView):
+    template_name = 'user_auth/login.html'
+
+
+    def form_valid(self, form):
+        # Проверяем, заблокирован ли пользователь
+        if self.request.user.is_authenticated and self.request.user.is_blocked:
+            messages.error(self.request, 'Ваш аккаунт заблокирован.')
+            return self.form_invalid(form)
+        return super().form_valid(form)
+class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, generic.DetailView):
     model = User
+    permission_required = ['user_auth.view_user']
     def get_context_data(self, **kwargs):
         contex_data = super().get_context_data(**kwargs)
         contex_data['title'] = self.get_object()
         contex_data['text'] = self.get_object()
         return contex_data
 
-class UsersListView(LoginRequiredMixin, generic.ListView):
+class UsersListView(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     model = User
+    permission_required = ['user_auth.view_user']
     extra_context = {
         'title': 'Пользователи сервиса',
         'text': 'Пользователи сервиса'
@@ -41,8 +55,9 @@ class UsersListView(LoginRequiredMixin, generic.ListView):
         queryset = queryset.filter(is_active=True, is_blocked=False).order_by('email', 'phone', 'is_active')
         return queryset
 
-class UsersDraftListView(LoginRequiredMixin, generic.ListView):
+class UsersDraftListView(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     model = User
+    permission_required = ['user_auth.view_user']
     extra_context = {
         'title': 'Пользователи сервиса',
         'text': 'Пользователи сервиса'
@@ -71,7 +86,7 @@ class UserIsNotAuthenticated(UserPassesTestMixin):
         return True
 
     def handle_no_permission(self):
-        return redirect('home')
+        return redirect('mailing:home')
 
 class UserForgotPasswordView(SuccessMessageMixin, PasswordResetView):
     """
@@ -223,7 +238,29 @@ def generate_new_password(request):
         recipient_list=[request.user.email]
     )
     return redirect(reverse('user_auth:login'))
-
+def foggot_password(request):
+    return render(request, 'reset_password.html')
+def reset_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            password = "".join(sample(
+                "".join([str(i) for i in range(0, 10)]) + "*+-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                10))
+            user.set_password(password)
+            user.save()
+            send_mail(
+                subject='Новый пароль',
+                message=f'Вам установлен новый пароль:\n{password}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email]
+            )
+            return redirect('user_auth:email_confirmation_sent')
+        except User.DoesNotExist:
+            return redirect('user_auth:email_confirmation_failed')
+    return render(request, 'reset_password.html')
 
 
 

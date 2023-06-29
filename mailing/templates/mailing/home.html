@@ -1,0 +1,47 @@
+{% extends 'mailing/base.html' %}
+
+    {% block content %}
+        <h4>{{ text }}</h4>
+        <br>
+        <h6>Количество рассылок:{{ mailing_count }}</h6>
+        <h6>Количество активных рассылок:{{ mailing_active_count }}</h6>
+        <h6>Количество уникальных клиентов для рассылок:{{ unique_count }}</h6>
+
+        <div id="colorlib-main">
+			<section class="ftco-section">
+				<div class="container">
+					<div class="row px-md-4">
+{% for blog in blog_random %}
+						<div class="col-md-12">
+							<div class="blog-entry ftco-animate d-md-flex">
+
+                                <div class="col-md-4">
+                                   {% if  blog.preview %}
+                                    <div class="card p-3 my-2 border" style="width: 24rem;">
+                                        <img src="{{ blog.preview.url }}" class="card-img-top rounded-circle" alt="{{ blog.title }}">
+                                    </div>
+                                  {% endif %}
+
+                                </div>
+								<div class="text text-2 pl-md-4">
+		              <h3 class="mb-2"><a href="{% url 'blog:blog' blog.slug %}">{{ blog.title }}</a></h3>
+		              <div class="meta-wrap">
+										<p class="meta">
+		              		<span><i class="icon-calendar mr-2"></i>{{ blog.created_at|date:'d:m:Y' }} г.</span>
+		              		<span><i class="icon-comment2 mr-2"></i> Просмотров: {{ blog.count_view }}</span>
+		              	</p>
+	              	</div>
+		              <p class="mb-4">{{ blog.description }}</p>
+		              <p><a href="{% url 'blog:blog' blog.slug %}" class="btn-custom">Read More <span class="ion-ios-arrow-forward"></span></a></p>
+		            </div>
+							</div>
+						</div>
+
+
+    {% endfor %}
+                    </div>
+                </div>
+        </div>
+    {% endblock content %}
+
+

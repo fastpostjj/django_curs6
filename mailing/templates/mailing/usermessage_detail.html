@@ -1,5 +1,7 @@
 {% extends 'mailing/base.html' %}
 {% block content %}
     {% include 'mailing/includes/usermessage.html' %}
+    {% if object.user == user or user.is_staff or user.is_superuser %}
     {% include 'mailing/includes/usermessage_buttons.html' %}
+    {% endif %}
 {% endblock content %}

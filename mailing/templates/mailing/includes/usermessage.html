@@ -9,6 +9,7 @@
         <h5 class="card-title">{{ object.title }}</h5>
         <a href="{% url 'mailing:usermessage' object.pk %}" >{{ object.title }}</a>
         <p class="card-text mb-auto">{{ object.text }}</p>
+        <p class="card-text text-muted">Автор: {{ object.user }}</p>
         {% endif %}
       </div>
     </div>

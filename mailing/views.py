@@ -1,10 +1,14 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+import random
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views import generic, View
 
 from mailing.forms import ClientForm, ClientFormCut, MailingForm, MailingFormCut, UserMessageForm, UserMessageFormCut
 from mailing.models import Client, UserMessage, Mailing, MailingAttempts
+from blog.models import Blog
 
 
 # Create your views here.
@@ -13,7 +17,24 @@ def index(request):
     return render(request, 'mailing/base.html')
 
 def home(request):
-    return render(request, 'mailing/base.html')
+    # Главная страница
+    """
+    - количество рассылок всего
+    - количество активных рассылок
+    - количество уникальных клиентов для рассылок
+    - 3 случайные статьи из блога
+    """
+    size = 3
+    objects = Blog.objects.filter(is_published=True, is_active=True).order_by('?')[:size]
+
+    return render(request, 'mailing/home.html',
+        {
+        'text':'Добро пожаловать!',
+        'mailing_count': len(Mailing.objects.all()),
+        'mailing_active_count': len(Mailing.objects.filter(is_active=True)),
+        'unique_count': Client.objects.values('email').annotate(total=Count('email')).count(),
+        'blog_random': objects
+        })
 
 # MailingAttempts
 class MailingAttemptsDetailView(LoginRequiredMixin, generic.DetailView):
@@ -152,6 +173,14 @@ class UserMessageCreateView(LoginRequiredMixin, generic.CreateView):
     fields = ('title', 'text')
     success_url = reverse_lazy('mailing:usermessages')
 
+    def form_valid(self, form):
+        """Текущий пользователь будет автором созданного сообщения"""
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        form.save_m2m()
+        return redirect(self.get_success_url())
+
 class UserMessageUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = UserMessage
     fields = ('title', 'text')
@@ -163,8 +192,8 @@ class UserMessageUpdateView(LoginRequiredMixin, generic.UpdateView):
         # Редактирование формы доступно только админу и  пользователю. Менеджеру с правами is_staff редактирование недоступно
         if self.request.user.is_superuser:
              class_form = UserMessageForm
-        # elif self.object.user == self.request.user:
-        #     class_form = UserMessageForm
+        elif self.object.user == self.request.user:
+            class_form = UserMessageForm
         elif self.request.user.is_staff:
              class_form = UserMessageFormCut
         else:
@@ -182,11 +211,21 @@ class UserMessageListView(LoginRequiredMixin, generic.ListView):
         'text': 'Сообщения'
     }
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=True).order_by("title", "text")
-        return queryset
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     queryset = queryset.filter(is_active=True).order_by("title", "text")
+    #     return queryset
+    #
 
+    def get_queryset(self, *args, **kwargs):
+        queryset = super().get_queryset()
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            # Пользователь с правами персонала или администратора может видеть все рассылки
+            queryset = queryset.filter(is_active=True).order_by("title",)
+        else:
+            # Обычный пользователь - только своих
+            queryset = queryset.filter(is_active=True, user=self.request.user).order_by("title",)
+        return queryset
 class UserMessageDraftListView(LoginRequiredMixin, generic.ListView):
     model = UserMessage
     extra_context = {

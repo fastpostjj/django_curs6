@@ -13,10 +13,10 @@ class ClientsAdmin(admin.ModelAdmin):
 
 @admin.register(UserMessage)
 class UserMessageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'text')
-    list_display_links = ('id', 'title')
-    list_filter = ('title', 'text')
-    search_fields = ('title', 'text')
+    list_display = ('id', 'title', 'text', 'user')
+    list_display_links = ('id', 'title', 'user')
+    list_filter = ('title', 'text', 'user')
+    search_fields = ('title', 'text', 'user')
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):

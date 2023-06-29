@@ -9,9 +9,11 @@ class FormStyleMixin:
 
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
-        # Задаем класс для кнопки "Активный"
-        self.fields['is_active'].widget.attrs.update({'class': 'form-check-input'})
-        self.fields['is_active'].label_attrs = {'class': 'form-check-label'}
+
+        if 'is_active' in self.fields:
+            # Задаем класс для кнопки "Активный"
+            self.fields['is_active'].widget.attrs.update({'class': 'form-check-input'})
+            self.fields['is_active'].label_attrs = {'class': 'form-check-label'}
 
 
 class UserMessageForm(FormStyleMixin, forms.ModelForm):

@@ -34,6 +34,6 @@ class Command(BaseCommand):
         user.save()
 
     def handle(self, *args, **options):
-        self.create_superuser( *args, **options)
+        # self.create_superuser( *args, **options)
         # self.create_user( *args, **options)
-        # self.change_password(*args, **options)
+        self.change_password(*args, **options)
