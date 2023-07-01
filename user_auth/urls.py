@@ -6,7 +6,7 @@ from user_auth.views import UserForgotPasswordView, UserRegisterView, \
     ProfileUpdateView, RegisterView, generate_new_password, foggot_password, reset_password, \
     UserPasswordResetConfirmView, EmailConfirmationSentView, UserConfirmEmailView, EmailConfirmedView, \
     EmailConfirmationFailedView, UsersListView, UserDetailView, UsersDraftListView, Toggle_Activity_User, \
-    BlockedLoginView
+    BlockedLoginView, blocked_page
 
 app_name = UserAuthConfig.name
 
@@ -15,6 +15,7 @@ urlpatterns = [
     path('', BlockedLoginView.as_view(template_name='user_auth/login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', UserRegisterView.as_view(), name='register'),
+    path('blocked_page/', blocked_page, name='blocked_page'),
 
     path('users/', UsersListView.as_view(), name='users'),
     path('users_drafts/', UsersDraftListView.as_view(), name='users_drafts'),

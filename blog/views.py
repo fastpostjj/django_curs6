@@ -6,9 +6,27 @@ from django.views import generic, View
 
 from blog.models import Blog
 from config.settings import EMAIL_HOST_USER
-
+from django.core.cache import cache
+from config.settings import CACHE_ENABLED
 
 # Create your views here.
+
+def get_blog_list():
+    if CACHE_ENABLED:
+        # Проверяем включенность кеша
+        key = f'blog_list'  # Создаем ключ для хранения
+        blog_list = cache.get(key)  # Пытаемся получить данные
+        if blog_list is None:
+            # Если данные не были получены из кеша, то выбираем из БД и записываем в кеш
+            blog_list = Blog.objects.all()
+
+            cache.set(key, blog_list)
+    else:
+        # Если кеш не был подключен, то просто обращаемся к БД
+        blog_list = Blog.objects.all()
+    return blog_list
+
+
 
 class BlogDetailView(generic.DetailView):
     model = Blog
@@ -48,7 +66,9 @@ class BlogListView(generic.ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=True, is_published=True).order_by("-created_at", "title")
+        # queryset = queryset.filter(is_active=True, is_published=True).order_by("-created_at", "title")
+        # Получаем из кэша
+        queryset = get_blog_list()
         return queryset
 
 class BlogDraftListView(generic.ListView):

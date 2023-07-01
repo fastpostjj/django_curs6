@@ -1,4 +1,4 @@
-from management.commands import send_mail_all_clients
+from mailing.services.send_mailing import find_malling_for_send
 
 def my_scheduled_job():
-  send_mail_all_clients()
+  find_malling_for_send()

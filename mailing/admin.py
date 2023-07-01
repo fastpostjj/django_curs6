@@ -20,10 +20,10 @@ class UserMessageAdmin(admin.ModelAdmin):
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'user_message', 'user', 'time', 'start_day', 'period', 'status', 'is_active')
-    list_display_links = ('id', 'name', 'user_message', 'user', 'time', 'period', 'status')
-    list_filter = ('user_message', 'user', 'name', 'time', 'start_day', 'period', 'status', 'is_active')
-    search_fields = ('user_message', 'user', 'name', 'time', 'start_day', 'period', 'status', 'is_active')
+    list_display = ('id', 'name', 'user_message', 'user', 'time', 'start_day', 'period', 'status', 'is_active', 'client')
+    list_display_links = ('id', 'name', 'user_message', 'user', 'time', 'period', 'status', 'client')
+    list_filter = ('user_message', 'user', 'name', 'time', 'start_day', 'period', 'status', 'is_active', 'client')
+    search_fields = ('user_message', 'user', 'name', 'time', 'start_day', 'period', 'status', 'is_active', 'client')
 
 @admin.register(MailingAttempts)
 class MailingAttemptsAdmin(admin.ModelAdmin):

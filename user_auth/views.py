@@ -1,8 +1,8 @@
 from random import sample
-
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, get_user_model
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, LoginView
@@ -11,12 +11,13 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View, generic
 from django.views.generic import CreateView, UpdateView, TemplateView
+from django.contrib.auth import get_user_model
 
 from user_auth.forms import UserForgotPasswordForm, UserRegisterForm, UserSetNewPasswordForm, UserForm
 from user_auth.models import User
@@ -24,16 +25,75 @@ from user_auth.models import User
 
 # Create your views here.
 
+User = get_user_model()
+# def user_not_blocked(view_func):
+#     def wrapper(request, *args, **kwargs):
+#         if request.user.blocked:
+#             return redirect('blocked_page')
+#         return view_func(request, *args, **kwargs)
+#     return wrapper
+
+# @method_decorator(login_required(login_url='login'), name='dispatch')
+# @method_decorator(user_not_blocked, name='dispatch')
 class BlockedLoginView(LoginView):
     template_name = 'user_auth/login.html'
 
-
     def form_valid(self, form):
-        # Проверяем, заблокирован ли пользователь
-        if self.request.user.is_authenticated and self.request.user.is_blocked:
-            messages.error(self.request, 'Ваш аккаунт заблокирован.')
+        # email = form.cleaned_data.get('email')
+        email = form.cleaned_data.get('username')
+        # password = form.cleaned_data.get('password')
+        print('email=', email)
+        # print('username=', username)
+        # Проверка на заблокированного пользователя
+        if User.objects.filter(email=email, is_blocked=True).exists():
+            print("заблокирован")
+            form.add_error(None, 'Ваш аккаунт заблокирован.')
             return self.form_invalid(form)
+        else:
+            print("Не заблокирован")
+
         return super().form_valid(form)
+
+    # def is_blocked(self, email):
+    #     if request.user.blocked:
+    #
+    #     return redirect('blocked_page')
+
+
+    # def form_valid(self, form):
+        # print(f'self.request.user.is_authenticated={self.request.user.is_authenticated}')
+        # # if self.request.user.is_authenticated:
+        # #     print(f'self.request.user.is_authenticated={self.request.user.is_authenticated}, self.request.user.is_blocked={self.request.user.is_blocked}')
+        # #     messages.error(self.request, f'self.request.user.is_authenticated={self.request.user.is_authenticated}, self.request.user.is_blocked={self.request.user.is_blocked}')
+        # # else:
+        # #     if not User.objects.filter(email=self.request.user.email, is_blocked=False).exists():
+        # #         print("Не заблокирован")
+        # # Проверяем, заблокирован ли пользователь
+        # if self.request.user.is_authenticated and self.request.user.is_blocked:
+        #     messages.error(self.request, 'Ваш аккаунт заблокирован.')
+        #     return self.form_invalid(form)
+        # unauthenticated_user = None
+        # user = None
+        #
+        # try:
+        #     unauthenticated_user = User.objects.get(email=form.cleaned_data["email"].lower())
+        #     user = authenticate(request, username=unauthenticated_user.username, password=form.cleaned_date["password"])
+        # except User.DoesNotExist:
+        #     # We pass this error, as we will handle it below with added logic for failed logins-count
+        #     pass
+        # return super().form_valid(form)
+
+    # def get(self, request):
+    #     if request.user.blocked:
+    #         print('blocked')
+    #         # return redirect('blocked_page')
+    #     else:
+    #         print('not blocked')
+    #         # Ваш код здесь
+    #         # return redirect('user_auth:email_confirmation_failed')
+    #     return redirect('mailing:home')
+
+
 class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, generic.DetailView):
     model = User
     permission_required = ['user_auth.view_user']
@@ -226,6 +286,11 @@ class RegisterView(CreateView):
             recipient_list=[new_user.email]
         )
         return super().form_valid(form)
+
+def blocked_page(request):
+    template_name = 'user_auth/bloked_page.html'
+
+
 
 def generate_new_password(request):
     password = "".join(sample("".join([str(i) for i in range(0,10)]) + "*+-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 10))

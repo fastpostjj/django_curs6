@@ -89,7 +89,7 @@ class Mailing(models.Model):
         **NULLABLE
     )
     time = models.TimeField(
-        verbose_name="Время рассылки",
+        verbose_name="Время начала рассылки",
         default="0:00:00"
 
     )
@@ -119,6 +119,11 @@ class Mailing(models.Model):
         default="created"
     )
     is_active = models.BooleanField(default=True, verbose_name='активная')
+    client = models.ForeignKey(Client,
+                             verbose_name='клиент',
+                             default=None,
+                             on_delete=models.DO_NOTHING
+                             )
     user = models.ForeignKey(User,
                              verbose_name='автор',
                              default=None,
@@ -129,8 +134,15 @@ class Mailing(models.Model):
     def __str__(self):
         period = (dict(self._meta.get_field('period').choices)[self.period])
         status = (dict(self._meta.get_field('status').choices)[self.status])
-        return f" {self.name}->Сообщение:{self.user_message.title}, время: {self.time}, периодичность: {period}, "# \
-               # + f"статус: {status}, " + "активная" if self.is_active else "неактивная"
+        text = f" {self.name}->Сообщение:"
+        if self.user_message.title:
+            text += f'{self.user_message.title}'
+        if self.time:
+            text += f', время: {self.time}'
+        if period:
+            text += f', периодичность: {period}'
+
+        return text
 
     class Meta():
         verbose_name = 'Рассылка'

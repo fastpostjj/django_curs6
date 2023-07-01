@@ -20,7 +20,8 @@ class UserMessageForm(FormStyleMixin, forms.ModelForm):
 
     class Meta:
         model = UserMessage
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['user', ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'style': 'width: 100%;'}),
             'text': forms.Textarea(attrs={'class': 'form-control', 'style': 'width: 100%;height: 200px;', 'rows': 10, }),
@@ -33,9 +34,11 @@ class UserMessageForm(FormStyleMixin, forms.ModelForm):
 
 
 class ClientForm(FormStyleMixin, forms.ModelForm):
+    # Форма для админа
     class Meta:
         model = Client
         fields = '__all__'
+        # exclude = ['user', ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,10 +46,12 @@ class ClientForm(FormStyleMixin, forms.ModelForm):
 
 
 class ClientFormCut(FormStyleMixin, forms.ModelForm):
+    # Форма для обычного пользователя и стаффа
     class Meta:
         model = Client
         fields = '__all__'
-        # fields = ['is_active',]
+        # exclude = ['user',]
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -54,20 +59,27 @@ class ClientFormCut(FormStyleMixin, forms.ModelForm):
         self.fields['name'].widget.attrs['readonly'] = True
         self.fields['email'].widget.attrs['readonly'] = True
         self.fields['comment'].widget.attrs['readonly'] = True
-        self.fields['user'].widget.attrs['readonly'] = True
+        # self.fields['user'].widget.attrs['readonly'] = True
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            # Если нет, то скрываем поле user
+            self.fields['user'].widget = forms.HiddenInput()
 
 class MailingForm(FormStyleMixin, forms.ModelForm):
+    # Форма для пользователя и админа
     class Meta:
         model = Mailing
         fields = '__all__'
+        # exclude = ['user',]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 class MailingFormCut(FormStyleMixin, forms.ModelForm):
+    # Форма для стаффа
     class Meta:
         model = Mailing
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['user', ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,13 +90,15 @@ class MailingFormCut(FormStyleMixin, forms.ModelForm):
         self.fields['time'].widget.attrs['readonly'] = True
         self.fields['period'].widget.attrs['readonly'] = True
         self.fields['start_day'].widget.attrs['readonly'] = True
-        self.fields['user'].widget.attrs['readonly'] = True
+        # self.fields['user'].widget.attrs['readonly'] = True
+        self.fields['client'].widget.attrs['readonly'] = True
 
 
 class UserMessageForm(FormStyleMixin, forms.ModelForm):
     class Meta:
         model = UserMessage
         fields = '__all__'
+        # exclude = ['user', ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -92,7 +106,8 @@ class UserMessageForm(FormStyleMixin, forms.ModelForm):
 class UserMessageFormCut(FormStyleMixin, forms.ModelForm):
     class Meta:
         model = UserMessage
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['user', ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

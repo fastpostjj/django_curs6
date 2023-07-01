@@ -1,5 +1,4 @@
 import random
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404, redirect
@@ -9,6 +8,7 @@ from django.views import generic, View
 from mailing.forms import ClientForm, ClientFormCut, MailingForm, MailingFormCut, UserMessageForm, UserMessageFormCut
 from mailing.models import Client, UserMessage, Mailing, MailingAttempts
 from blog.models import Blog
+from mailing.services.send_mailing import find_malling_for_send
 
 
 # Create your views here.
@@ -36,6 +36,7 @@ def home(request):
         'blog_random': objects
         })
 
+
 # MailingAttempts
 class MailingAttemptsDetailView(LoginRequiredMixin, generic.DetailView):
     model = MailingAttempts
@@ -53,7 +54,7 @@ class MailingAttemptsListView(LoginRequiredMixin, generic.ListView):
     }
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(is_active=True).order_by('mayling', 'mailing_daytime', 'server_answer', 'status', 'is_active')
+        queryset = queryset.filter(is_active=True).order_by('-mailing_daytime', 'mayling', 'server_answer', 'status', 'is_active')
         return queryset
 
 # Mailing
@@ -68,7 +69,7 @@ class MailingDetailView(LoginRequiredMixin, generic.DetailView):
 
 class MailingCreateView(LoginRequiredMixin, generic.CreateView):
     model = Mailing
-    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status', 'user')
+    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status', 'client')
     success_url = reverse_lazy('mailing:mailings')
 
     def form_valid(self, form):
@@ -77,12 +78,14 @@ class MailingCreateView(LoginRequiredMixin, generic.CreateView):
         self.object.user = self.request.user
         self.object.save()
         form.save_m2m()
+        # Запускаем все активные рассылки
+        find_malling_for_send()
         return redirect(self.get_success_url())
 
 
 class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Mailing
-    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status', 'user')
+    fields = ('name', 'user_message', 'time', 'start_day', 'period', 'status', 'client')
     # success_url = reverse_lazy('blog:blogs')
     def get_success_url(self):
         return reverse('mailing:mailing', args=[self.object.pk])
@@ -106,6 +109,12 @@ class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
         else:
              class_form = None
         return class_form
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not self.request.user.is_superuser:
+            form.fields.pop('user')
+        return form
 
 
 class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -139,6 +148,21 @@ class MailingDraftListView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.filter(is_active=False, user=self.request.user).order_by('status', 'period', 'name', 'user_message', 'time')
+        return queryset
+class MailingRunListView(LoginRequiredMixin, generic.ListView):
+    model = Mailing
+    extra_context = {
+        'title': 'Запущенные рассылки',
+        'text': 'Запущенные рассылки'
+    }
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Админ и стафф видят все рассылки, остальные пользователи- только свои
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            queryset = queryset.filter(is_active=True, status='run').order_by('status', 'period', 'name', 'user_message', 'time')
+        else:
+            queryset = queryset.filter(is_active=True, status='run', user=self.request.user).order_by('status', 'period', 'name', 'user_message', 'time')
         return queryset
 class Toggle_Activity_Mailing(View):
     def get(request, *args, pk, **kwargs):
@@ -200,6 +224,12 @@ class UserMessageUpdateView(LoginRequiredMixin, generic.UpdateView):
              class_form = UserMessageForm
         return class_form
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not self.request.user.is_superuser:
+            form.fields.pop('user')
+        return form
+
 class UserMessageDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = UserMessage
     success_url = reverse_lazy('mailing:usermessages')
@@ -210,12 +240,6 @@ class UserMessageListView(LoginRequiredMixin, generic.ListView):
         'title': 'Сообщения',
         'text': 'Сообщения'
     }
-
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     queryset = queryset.filter(is_active=True).order_by("title", "text")
-    #     return queryset
-    #
 
     def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset()
@@ -270,7 +294,7 @@ class ClientDraftListView(LoginRequiredMixin, generic.ListView):
 
 class ClientCreateView(LoginRequiredMixin, generic.CreateView):
     model = Client
-    fields = ('name', 'email', 'comment', 'is_active', 'user')
+    fields = ('name', 'email', 'comment', 'is_active')
     success_url = reverse_lazy('mailing:clients')
 
     def form_valid(self, form):
@@ -284,7 +308,7 @@ class ClientCreateView(LoginRequiredMixin, generic.CreateView):
 
 class ClientUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Client
-    fields = ('name', 'email', 'comment', 'user', 'is_active')
+    fields = ('name', 'email', 'comment', 'is_active')
     # success_url = reverse_lazy('blog:blogs')
     def get_success_url(self):
         return reverse('mailing:client', args=[self.object.pk])
@@ -308,6 +332,12 @@ class ClientUpdateView(LoginRequiredMixin, generic.UpdateView):
         else:
              class_form = None
         return class_form
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not self.request.user.is_superuser:
+            form.fields.pop('user')
+        return form
 
 
 class ClientDeleteView(LoginRequiredMixin, generic.DeleteView):

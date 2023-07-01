@@ -3,6 +3,7 @@
 {% block content %}
 <diov class="col-12">
     <a href="{% url 'mailing:mailings' %}" class ='btn btn-primary' m-2>Все рассылки &raquo;</a>
+    <a href="{% url 'mailing:mailing_run' %}" class ='btn btn-primary' m-2>Запущенные рассылки &raquo;</a>
     <a href="{% url 'mailing:mailing_drafts' %}" class ='btn btn-primary' m-2>Неактивные рассылки &raquo;</a>
 </diov>
     <br>

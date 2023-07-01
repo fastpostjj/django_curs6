@@ -130,7 +130,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
+# TIME_.ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -178,3 +179,23 @@ if os.name == "Linux":
     CRONJOBS = [
         ('*/5 * * * *', 'mailing.cron.my_scheduled_job')
     ]
+
+# настроики использование кеша
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}
+
+# признак использования кэша
+CACHE_ENABLED=True
+
+if CACHE_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379",
+        }
+    }
