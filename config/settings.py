@@ -92,12 +92,12 @@ if os.name == "nt":
             'HOST': params['host']
         }
     }
-elif os.name == "Linux":
+elif os.name == "Linux" or "posix":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': databasename,
-            'USER': 'django-user',
+            'USER': 'djangouser',
             'PORT': params['port'],
             'PASSWORD': '12345',
             'HOST': params['host']
