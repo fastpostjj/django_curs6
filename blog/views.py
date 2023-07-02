@@ -26,8 +26,6 @@ def get_blog_list():
         blog_list = Blog.objects.all()
     return blog_list
 
-
-
 class BlogDetailView(generic.DetailView):
     model = Blog
     def get_context_data(self, **kwargs):

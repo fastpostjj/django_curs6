@@ -177,7 +177,7 @@ NULLABLE = {'null': True, 'blank': True}
 
 if os.name == "Linux" or "posix":
     CRONJOBS = [
-        ('1 * * * *', 'mailing.cron.my_scheduled_job')
+        ('* * * * *', 'mailing.cron.my_scheduled_job')
     ]
 
 # настроики использование кеша

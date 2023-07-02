@@ -89,10 +89,10 @@ class Mailing(models.Model):
         **NULLABLE
     )
     time = models.TimeField(
-        verbose_name="Время начала рассылки",
-        default="0:00:00"
-
+        default="0:00:00",
+        verbose_name="Время начала рассылки"
     )
+
     period = models.CharField(
         verbose_name="Периодичность рассылки",
         max_length=12,
@@ -104,8 +104,8 @@ class Mailing(models.Model):
         default='monthly'
     )
     start_day = models.DateField(
-        verbose_name="Дата начала рассылки",
-        default="2001-01-01"
+        default="01.01.2001",
+        verbose_name="Дата начала рассылки"
     )
 
     status = models.CharField(
@@ -122,7 +122,8 @@ class Mailing(models.Model):
     client = models.ForeignKey(Client,
                              verbose_name='клиент',
                              default=None,
-                             on_delete=models.DO_NOTHING
+                             on_delete=models.DO_NOTHING,
+                             **NULLABLE
                              )
     user = models.ForeignKey(User,
                              verbose_name='автор',

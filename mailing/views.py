@@ -1,4 +1,6 @@
 import random
+from datetime import timezone
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404, redirect
@@ -78,9 +80,17 @@ class MailingCreateView(LoginRequiredMixin, generic.CreateView):
         self.object.user = self.request.user
         self.object.save()
         form.save_m2m()
-        # Запускаем все активные рассылки
+        # Запускаем скрипт для отправки активных рассылок
         find_malling_for_send()
         return redirect(self.get_success_url())
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            # Задаем текущую дату и время для новой сущности
+            self.time = timezone.now().time()
+            self.date = timezone.now().date()
+            # print('self.time=', self.time, ' self.date=', self.date)
+        return super().save(*args, **kwargs)
 
 
 class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
@@ -115,6 +125,12 @@ class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
         if not self.request.user.is_superuser:
             form.fields.pop('user')
         return form
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['start_day'] = timezone.now().date()
+        initial['time'] = timezone.now().time()
+        return initial
 
 
 class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
