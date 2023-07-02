@@ -31,7 +31,7 @@ def find_malling_for_send(*args, **kwargs):
     last_send_datetime = timezone.now()
     mailings = Mailing.objects.filter(is_active=True, status='run', client__isnull=False).order_by('id')
     for mailing in mailings:
-        print(mailing)
+        # print(mailing)
 
         send_flug = False
         datetime_now =  timezone.now()
@@ -64,7 +64,7 @@ def find_malling_for_send(*args, **kwargs):
             email = mailing.client.email
             name = mailing.client.name
             message_body = f'Уважаемый(ая), {name}!\n{message_body}'
-            print('send mail')
+            # print('send mail')
             # print('mailing.client=', mailing.client, ' mailing.status=', mailing.status, ' mailing.period=', mailing.period, ' next_send_datetime=', next_send_datetime)
             status, server_answer = send_email(subject, message_body, email)
 

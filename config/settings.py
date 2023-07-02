@@ -175,9 +175,9 @@ LOGIN_URL = '/users/'
 
 NULLABLE = {'null': True, 'blank': True}
 
-if os.name == "Linux":
+if os.name == "Linux" or "posix":
     CRONJOBS = [
-        ('*/5 * * * *', 'mailing.cron.my_scheduled_job')
+        ('1 * * * *', 'mailing.cron.my_scheduled_job')
     ]
 
 # настроики использование кеша
