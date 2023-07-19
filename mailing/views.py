@@ -345,6 +345,7 @@ class ClientUpdateView(LoginRequiredMixin, generic.UpdateView):
             class_form = ClientForm
         elif self.request.user.is_staff:
              class_form = ClientFormCut
+
         else:
              class_form = None
         return class_form

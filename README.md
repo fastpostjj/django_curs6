@@ -75,6 +75,9 @@
     password=  
 
 Для запуска периодических задач нужно запустить сервис cron следующей командой:
+-sudo service cron start
+
+Для запуска postgres:
 - sudo service postgres start
 
 Команды для добавления, просмотра и удаления заданий cron:

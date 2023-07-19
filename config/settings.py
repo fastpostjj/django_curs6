@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-params = get_database_params('database.ini')
+params = get_database_params(str(BASE_DIR) + '/' + 'database.ini')
 
 if os.name == "nt":
     DATABASES = {
@@ -156,7 +156,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # для отправки письма
-email_params = get_email_params('email.ini')
+email_params = get_email_params(str(BASE_DIR) + '/' + 'email.ini')
 
 EMAIL_HOST = 'smtp.yandex.com'
 EMAIL_PORT = 465
