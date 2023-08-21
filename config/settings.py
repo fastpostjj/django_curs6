@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-from config_file import get_database_params, get_email_params, databasename
+
+# from config_file import get_database_params, get_email_params, databasename
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +29,8 @@ SECRET_KEY = 'django-insecure-mhhsi0fy+8(woowi2s+^8s+_%+ivk4vlvm&mzc6n1dgkoc%a#g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = [э*'']
 
 
 # Application definition
@@ -79,30 +82,61 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-params = get_database_params(str(BASE_DIR) + '/' + 'database.ini')
+# params = get_database_params(str(BASE_DIR) + '/' + 'database.ini')
 
-if os.name == "nt":
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': databasename,
-            'USER': params['user'],
-            'PORT': params['port'],
-            'PASSWORD': params['password'],
-            'HOST': params['host']
-        }
+dot_env = os.path.join(BASE_DIR, '.env')
+load_dotenv(dotenv_path=dot_env)
+
+CACHE_ENABLED = os.getenv('CACHE_ENABLED')
+# user = os.getenv('user')
+# databasename = os.getenv('databasename')
+# password = os.getenv('password')
+# port = os.getenv('port')
+host = os.getenv('host')
+email = os.getenv('email')
+password_email = os.getenv('password_email')
+
+
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': POSTGRES_DB,
+        'USER': POSTGRES_USER,
+        'PORT': POSTGRES_PORT,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'HOST': host
     }
-elif os.name == "Linux" or "posix":
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': databasename,
-            'USER': 'djangouser',
-            'PORT': params['port'],
-            'PASSWORD': '12345',
-            'HOST': params['host']
-        }
-    }
+}
+
+
+
+# if os.name == "nt":
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': databasename,
+#             'USER': params['user'],
+#             'PORT': params['port'],
+#             'PASSWORD': params['password'],
+#             'HOST': params['host']
+#         }
+#     }
+# elif os.name == "Linux" or "posix":
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': databasename,
+#             'USER': 'djangouser',
+#             'PORT': params['port'],
+#             'PASSWORD': '12345',
+#             'HOST': params['host']
+#         }
+#     }
 
 
 
@@ -145,6 +179,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
     ]
+STATIC_ROOT = '/static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -156,12 +191,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # для отправки письма
-email_params = get_email_params(str(BASE_DIR) + '/' + 'email.ini')
+# email_params = get_email_params(str(BASE_DIR) + '/' + 'email.ini')
 
 EMAIL_HOST = 'smtp.yandex.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = email_params['email']
-EMAIL_HOST_PASSWORD = email_params['password']
+EMAIL_HOST_USER = email
+EMAIL_HOST_PASSWORD = password_email
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 
@@ -190,7 +225,6 @@ CACHES = {
 }
 
 # признак использования кэша
-CACHE_ENABLED=True
 
 if CACHE_ENABLED:
     CACHES = {

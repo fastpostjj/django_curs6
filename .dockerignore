@@ -1,13 +1,12 @@
-.env
 Tasks/
+task/
 venv/
 pddata/
 redisdata/
 
-database.ini
-email.ini
 
 __pycache__/
+pddata/
 
 products/__pycache__/
 products/migrations/__pycache__/
