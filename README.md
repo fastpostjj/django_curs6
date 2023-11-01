@@ -1,4 +1,6 @@
-## Учебный проект "Сервис рассылок"
+## Проект "Сервис рассылок"
+
+Django-проект для создания рассылок пользователям.
 
 Сущности проекта:
 - Клиент сервиса:
@@ -62,17 +64,17 @@
 Для запуска проекта нужны следующие файлы:
 - **database.ini**:
 
-    [postgresql]    
-    host=localhost    
-    user=postgres    
-    password=    
+    [postgresql]
+    host=localhost
+    user=postgres
+    password=
     port=5432
 
 - **email.ini**:
 
-    [email]    
-    email=    
-    password=  
+    [email]
+    email=
+    password=
 
 Для запуска периодических задач нужно запустить сервис cron следующей командой:
 -sudo service cron start
