@@ -40,6 +40,3 @@ def get_email_params(filename="email.ini", section="email"):
 
 databasename='mailing'
 
-
-
-
